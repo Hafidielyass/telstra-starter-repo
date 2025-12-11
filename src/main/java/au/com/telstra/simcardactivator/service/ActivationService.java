@@ -9,6 +9,8 @@ import org.springframework.web.client.RestTemplate;
 
 import au.com.telstra.simcardactivator.api.ActivationRequest;
 import au.com.telstra.simcardactivator.api.ActivationResult;
+import au.com.telstra.simcardactivator.entity.SimCard;
+import au.com.telstra.simcardactivator.repository.SimCardRepository;
 
 @Service
 public class ActivationService {
@@ -16,11 +18,14 @@ public class ActivationService {
 
     private final RestTemplate restTemplate;
     private final String actuatorUrl;
+    private final SimCardRepository simCardRepository;
 
     public ActivationService(RestTemplate restTemplate,
-                             @Value("${simcard.actuator.url:http://localhost:8444/actuate}") String actuatorUrl) {
+                             @Value("${simcard.actuator.url:http://localhost:8444/actuate}") String actuatorUrl,
+                             SimCardRepository simCardRepository) {
         this.restTemplate = restTemplate;
         this.actuatorUrl = actuatorUrl;
+        this.simCardRepository = simCardRepository;
     }
 
     public ActivationResult activate(ActivationRequest request) {
@@ -33,6 +38,10 @@ public class ActivationService {
 
         log.info("SIM activation for ICCID {} success={}", request.getIccid(), success);
         System.out.println("Activation result for ICCID " + request.getIccid() + ": " + success);
+
+        // Save record to database
+        SimCard simCard = new SimCard(request.getIccid(), request.getCustomerEmail(), success);
+        simCardRepository.save(simCard);
 
         return new ActivationResult(success);
     }
