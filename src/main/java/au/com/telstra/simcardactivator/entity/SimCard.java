@@ -1,6 +1,6 @@
 package au.com.telstra.simcardactivator.entity;
 
-import jakarta.persistence.*;
+import javax.persistence.*;
 
 /**
  * JPA entity representing a SIM card activation record.
